@@ -7,6 +7,7 @@ using UniCare.Application.Item.Commands;
 using UniCare.Application.Item.Commands.CreateItem;
 using UniCare.Application.Item.Commands.ToggleFavorite;
 using UniCare.Application.Item.Commands.UpdateItem;
+using UniCare.Application.Item.Commands.UploadItemImage;
 using UniCare.Application.Item.DTOs;
 using UniCare.Application.Item.Queries;
 using UniCare.Application.Item.Queries.GetAiRecommendations;
@@ -84,6 +85,40 @@ public class ItemsController : ControllerBase
 
         var result = await _mediator.Send(command);
         return CreatedAtAction(nameof(GetItemById), new { itemId = result.Id }, result);
+    }
+    [HttpPost("{itemId:guid}/images")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(UploadItemImageResult), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UploadImage(
+    Guid itemId,
+    IFormFile file,
+    CancellationToken cancellationToken)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(new { error = "No file provided." });
+
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms, cancellationToken);
+
+        var command = new UploadItemImageCommand(
+            ItemId: itemId,
+            RequestingUserId: GetCurrentUserId(),
+            FileContent: ms.ToArray(),
+            FileName: file.FileName,
+            ContentType: file.ContentType);
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        return result.IsSuccess
+            ? CreatedAtAction(nameof(GetItemById), new { itemId }, result.Data)
+            : result.StatusCode switch
+            {
+                403 => Forbid(),
+                404 => NotFound(new { error = result.ErrorMessage }),
+                _ => BadRequest(new { error = result.ErrorMessage })
+            };
     }
 
     [HttpPut("{itemId:guid}")]
