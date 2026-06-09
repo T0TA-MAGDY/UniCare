@@ -4,7 +4,8 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-	</PropertyGroup>
+	  <UserSecretsId>cd26e017-bacb-49e6-99d7-d4e69e84c1bb</UserSecretsId>
+  </PropertyGroup>
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
