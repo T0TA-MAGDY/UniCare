@@ -141,6 +141,7 @@ namespace UniCare.Infrastructure
             services.AddScoped<ISignInService, SignInService>();
             services.AddScoped<IChatNotificationService, SignalRChatNotificationService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IStudentVerificationRepository, StudentVerificationRepository>();
             services.AddSignalR();
 
             return services;
